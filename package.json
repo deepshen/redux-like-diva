@@ -1,6 +1,6 @@
 {
-  "name": "mobx-like-dva",
-  "version": "1.0.2",
+  "name": "redux-like-dva",
+  "version": "1.0.0",
   "description": "mobx",
   "main": "dist/index.js",
   "files": [
