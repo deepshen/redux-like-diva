@@ -81,10 +81,8 @@ class Root {
       // 如果 action 对应 reducer 存在，则根据函数修改 state，否则直接返回原 state
       if (currentReducer && currentReducer[type] && currentState) {
         newState[namespace] = currentReducer[type](payload, currentState);
-        // 修改后的 state 必须是新的对象，这样才不会覆盖旧的 state，才可以修改生效
         newState = { ...newState };
       }
-
       return newState;
     };
 
@@ -108,12 +106,20 @@ class Root {
       Object.keys(this.effects[namespace]).forEach(item => {
         let fn = this.effects[namespace][item]
         this.effects[namespace][item] = function (payload:any){
-          return fn.call(this,payload,{select: () => getState(),put})
+          return fn.call(this,payload,{select: () => getState()[namespace],put})
           // return fn(payload,{select:() => getState()[namespace],put,})
         }
       })
 
-      this.effects[namespace].dispatch = dispatch;
+
+      // 获取全量的方法
+      this.effects[namespace].dispatch = ({type,payload}:{type:string,payload:any}) => {
+        const [name,fnName]:string[] = type.split('/');
+        if(this.effects[name] && this.effects[name][fnName]){
+          return this.effects[name][fnName](payload)
+        }
+        return dispatch
+      }
       this.effects[namespace].getState = getState;
     });
 

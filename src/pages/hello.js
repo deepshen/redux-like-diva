@@ -2,23 +2,21 @@ import React, {useEffect} from 'react'
 import {connect} from '../../lib'
 
 const Hello = (props) => {
-	const {list,dispatch,name} = props
+	const {list,dispatch,name,age} = props
 	useEffect(() => {
-		dispatch({
-			type: "hello/getList",
-			payload: {
-				name: '123'
-			}
-		})
+		dispatch.hello.getList('我是hello')
 	},[])
 	return (
 		<div>
-			hello  {name}
+			hello  {name} {age}
 		</div>
 	)
 }
 export default connect(
 	state => ({
-		...state.hello
-	})
+		...state.hello,
+		...state.world
+	}),
+	{},
+	['hello']
 )(Hello)

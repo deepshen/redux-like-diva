@@ -5,7 +5,7 @@ import root from './redux';
 
 export type MapState = (state:any) => object
 
-export default (mapState:MapState, mapDispatch = {}, effectsArr = []) => {
+export default (mapStateToProps:MapState, mapDispatch = {}, effectsArr = []) => {
   return (Component:ReactNode) => {
 
     const NewComponent = (props:any) => {
@@ -25,22 +25,23 @@ export default (mapState:MapState, mapDispatch = {}, effectsArr = []) => {
         }
       };
 
-      const effectsProps:{[key:string]:any} = {};
+      // const effectsProps:{[key:string]:any} = {};
       effectsArr.forEach(item => {
         if (effects[item]) {
-          effectsProps[`${item}Effects`] = effects[item];
+          // 直接增加到组件props上,没必要，过多的增加了组件的无用属性
+          // effectsProps[`${item}Effects`] = effects[item];
           // dispatch增加属性直接触发effect，像dispatch.testEffects.getList使用
           // @ts-ignore
-          myDispatch[`${item}Effects`] = effects[item];
+          myDispatch[`${item}`] = effects[item];
         }
       });
 
       return (
         // @ts-ignore
-        <Component {...props} dispatch={myDispatch} {...effectsProps} />
+        <Component {...props} dispatch={myDispatch} />
       )
     };
 
-    return connect(mapState, mapDispatch)(NewComponent);
+    return connect(mapStateToProps, mapDispatch)(NewComponent);
   };
 };

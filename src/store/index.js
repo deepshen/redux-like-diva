@@ -1,9 +1,11 @@
 import store from '../../lib/index'
 
 import hello from './hello'
+import world from './world'
 
 export default store.init([
-	hello
+	hello,
+	world
 ])
 
 
