@@ -14,7 +14,8 @@
     "url": "https://github.com/deepshen/mobx-like-dva/issues"
   },
   "keywords": [
-    "mobx",
+    "redux",
+    "dva",
     "react"
   ],
   "author": "lw",
