@@ -95,9 +95,25 @@ class Root {
 
     // 给每个 model 的 effects 对象添加 dispatch、getState 方法
     Object.keys(this.effects).forEach(namespace => {
-      this.effects[namespace].dispatch = ({ type, payload }:{type:string,payload:any}) =>
-        // 修改 action type，添加 namespace
-        dispatch({ type: `${namespace}/${type}`, payload });
+      // put方法只触发当前model的
+      const put = ({ type, payload }:{type:string,payload:any}) => {
+        const effects = this.effects[namespace]
+        if(effects[type]){
+          return effects[type](payload)
+        }else {
+          return dispatch({ type: `${namespace}/${type}`, payload });
+        }
+      }
+      // 重写每个effects，添加新的属性进去
+      Object.keys(this.effects[namespace]).forEach(item => {
+        let fn = this.effects[namespace][item]
+        this.effects[namespace][item] = function (payload:any){
+          return fn.call(this,payload,{select: () => getState(),put})
+          // return fn(payload,{select:() => getState()[namespace],put,})
+        }
+      })
+
+      this.effects[namespace].dispatch = dispatch;
       this.effects[namespace].getState = getState;
     });
 

@@ -13,7 +13,6 @@ export default (mapState:MapState, mapDispatch = {}, effectsArr = []) => {
       const {dispatch} = store
       // 修改组件中 dispatch 触发 effects 中对应方法，而不是 reducer
       const myDispatch = ({ type, payload }:{type:string,payload?:any}) => {
-
         const [typeId, typeName] = type.split('/');
         const { effects, reducers } = root;
         // 触发effects
