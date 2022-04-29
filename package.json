@@ -1,5 +1,5 @@
 {
-  "name": "redux-like-dva",
+  "name": "redux-dva",
   "version": "1.0.0",
   "description": "mobx",
   "main": "dist/index.js",
