@@ -1,8 +1,12 @@
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('redux'), require('react-redux')) :
-  typeof define === 'function' && define.amd ? define(['exports', 'redux', 'react-redux'], factory) :
-  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.reduxDva = {}, global.redux, global.reactRedux));
-})(this, (function (exports, redux, reactRedux) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('redux'), require('react'), require('react-redux')) :
+  typeof define === 'function' && define.amd ? define(['exports', 'redux', 'react', 'react-redux'], factory) :
+  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.reduxDva = {}, global.redux, global.React, global.reactRedux));
+})(this, (function (exports, redux, React, reactRedux) { 'use strict';
+
+  function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
+
+  var React__default = /*#__PURE__*/_interopDefaultLegacy(React);
 
   const addNamespace = (obj, name) => {
       const newObj = {};
@@ -106,7 +110,7 @@
               });
               return (
               // @ts-ignore
-              React.createElement(Component, { ...props, dispatch: myDispatch, ...effectsProps }));
+              React__default["default"].createElement(Component, { ...props, dispatch: myDispatch, ...effectsProps }));
           };
           return reactRedux.connect(mapState, mapDispatch)(NewComponent);
       };

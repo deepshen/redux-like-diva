@@ -1,4 +1,4 @@
-import {ReactNode} from 'react';
+import React, {ReactNode} from 'react';
 import { connect } from 'react-redux';
 import root from './redux';
 
