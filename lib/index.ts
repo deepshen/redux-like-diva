@@ -1,40 +1,21 @@
-import {createContext, useContext} from 'react'
 import store from './redux'
 import connect from './connect'
 
-
 export default store
+
+const useState = () => {
+  const ins = store.store
+  return ins.getState()
+}
+const useDispatch = () => {
+  const ins = store
+  return ins.dispatch
+}
 
 
 // hooks写法
-class StoreHook{
-  store={}
-  init(arr:any[]){
-    const ins = store.init(arr)
-    this.store = ins
-  }
-}
-const StoreIns = new StoreHook()
-// @ts-ignore
-const context = createContext(StoreIns)
-const useStore = () => {
-  const store = useContext(context)
-  return store
-}
-const useState = () => {
-  const store = useStore().store
-  // @ts-ignore
-  const state = store.getState()
-  return state
-}
-const useDispatch = () => {
-  const store = useStore().store
-  // @ts-ignore
-  return store.dispatch
-}
 
-
-export {connect, StoreIns, useStore, useState, useDispatch}
+export {connect,useState,useDispatch}
 
 // use example
 // import {Provide} from 'react-redux'

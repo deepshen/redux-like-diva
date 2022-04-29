@@ -17,6 +17,11 @@ export interface Action{
   payload: any
 }
 
+export interface Dispatch{
+  type: string,
+  payload?: any
+}
+
 
 const addNamespace:AddIns = (obj, name) => {
   const newObj:Obj = {};
@@ -34,6 +39,7 @@ class Root {
   effects: {[key:string]:any}
   store: any
   allReducers: {[key:string]:any}
+  dispatch: (val:Dispatch) => void
   constructor() {
     this.state = {};
     this.models = {};
@@ -41,6 +47,7 @@ class Root {
     this.effects = {};
     this.store = {};
     this.allReducers = {};
+    this.dispatch = () => {}
   }
 
   init(models:Model[]) {
@@ -90,17 +97,23 @@ class Root {
     this.store = createStore(reducer);
 
     const { dispatch, getState } = this.store;
+    // 统一处理dispatch
+    this.dispatch = ({type,payload}:Dispatch) => {
+      const [name,fnName]:string[] = type.split('/');
+      if(this.effects[name] && this.effects[name][fnName]){
+        return this.effects[name][fnName](payload)
+      }else if(this.reducers[name] && this.reducers[name][fnName]){
+        return this.reducers[name][fnName](payload)
+      }else {
+        return dispatch
+      }
+    }
 
     // 给每个 model 的 effects 对象添加 dispatch、getState 方法
     Object.keys(this.effects).forEach(namespace => {
       // put方法只触发当前model的
       const put = ({ type, payload }:{type:string,payload:any}) => {
-        const effects = this.effects[namespace]
-        if(effects[type]){
-          return effects[type](payload)
-        }else {
-          return dispatch({ type: `${namespace}/${type}`, payload });
-        }
+        return this.dispatch({type:`${namespace}/${type}`,payload})
       }
       // 重写每个effects，添加新的属性进去
       Object.keys(this.effects[namespace]).forEach(item => {
@@ -113,13 +126,14 @@ class Root {
 
 
       // 获取全量的方法
-      this.effects[namespace].dispatch = ({type,payload}:{type:string,payload:any}) => {
-        const [name,fnName]:string[] = type.split('/');
-        if(this.effects[name] && this.effects[name][fnName]){
-          return this.effects[name][fnName](payload)
-        }
-        return dispatch
-      }
+      this.effects[namespace].dispatch = this.dispatch
+      // this.effects[namespace].dispatch = ({type,payload}:{type:string,payload:any}) => {
+      //   const [name,fnName]:string[] = type.split('/');
+      //   if(this.effects[name] && this.effects[name][fnName]){
+      //     return this.effects[name][fnName](payload)
+      //   }
+      //   return dispatch
+      // }
       this.effects[namespace].getState = getState;
     });
 
