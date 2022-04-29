@@ -1,112 +1,97 @@
-# use mobx like dva
+# use redux like dva
 
 ## 引入方式
 ```markdown
-npm install mobx-like-dva --save  或者
-yarn add mobx-like-dva -D
+npm i redux-dva --save 或者
+yarn add redux-dva -D
 
-and
-
-npm i mobx mobx-react --save
+自己项目需要支持
+react redux react-redux
 ```
 
-## 使用方式
-
-### 配置store
+## 配置方式 app主入口
 ```ecmascript 6
-import Store from 'mobx-like-dva'
+import store from 'redux-dva'
+import {Provider} from 'react-redux'
 
-import model1 from 'model1'
+import model from '自己的model配置如下'
 
-const store = new Store()
-store.init([model1])
+const storeIns = store.init([model])
 
-export default store
+export default () => {
+  
+  return (
+    <Provider store={storeIns}>
+      route配置
+    </Provider>
+  )
+}
+
 ```
-### 配置model
+
+## model配置，和dva差不多
 ```ecmascript 6
 export default {
   namespace: 'test',
   state: {
-	name: 'mobx'	
+    data: '1234'
   },
   effects: {
-    async fn(payload={},{update,get,dispatch}){
-      const {name} = payload
-      // 异步方法 如请求
-      // const data = await fetch(url)
-      update({
-        name: 'test', // model的namespace
+    async getData(payload){
+      const allState = this.getState() // 获取store所有的state
+      const {test} = allState
+      console.log(test)
+      // 本身的dispatch是掉用本model的effect或者reducer，
+      // 所有dispatch方法都会调用effect和reducer，所以最好不要重名，不然先effect，reducer不会调用
+      this.dispatch({
+        type: 'update',
         payload: {
-          name: name			
+          data: 'change'
         }
-      })   
-    }		
+      })
+    }
+  },
+  reducer: {
+    update(payload,state){
+      // payload传入参数，state是本model的state的值
+      return {
+        ...state,
+        ...payload
+      }
+    }
   }
 }
 ```
-### 组件使用
+
+## 组件使用
+
 ```ecmascript 6
-// 类组件
-import React from 'react'
-import store from 'store'
-import {observer} from 'mobx-react'
+import React,{useEffect} from "react";
+import {connect} from 'redux-dva'
 
-@observer
-class Text extends React.Component{
-  
-	
-  handleChange = () => {
-     const {update,dispatch} = store
-    // 直接改变
-    update({
-      name: 'test',
-      payload: {
-        name: 'change text'
-      }
-    })
-    // 调用model中effects改变
-    dispatch({
-      type: 'test/fn',
-      payload: {
-         name: 'change text'
-      }
-    })
-  }	
-  render() {
-    const state = store.getState('test')
-    const {name} = state
+const Com = (props) => {
+    const {data,dispatch} = props
+    useEffect(() => {
+        dispatch({
+          type: 'test/getList',
+          payload: {
+            data:'123'
+          }
+        })
+    },[])
     return (
-      <div>
-        {name}
-        <button onClick={this.handleChange}>改变name</button>
-      </div>			
-    )  
-  }
+        <div>
+            hello world
+            {data}
+        </div>
+    )
 }
 
-
-// 函数组件
-const FnComponent = () => {
-  // 用法和上述一样了	
-  return (
-    <div>hello world</div>
-  )
-}
-export default observer(FnComponent)
+export default connect(
+  state => ({
+    ...state.test
+  })
+)(Com)
 
 ```
-## 实例属性 storeIns
-| 属性名称     | 解析说明          | 类型                                         | 举例                                                    |  
-|----------|---------------|--------------------------------------------|-------------------------------------------------------|   
-| init     | 加载model       | model[]                                    | store.init([model1,model2])                           |
-| getState | 获取store的state | (name?:string) => ({})                     | const data = store.getState('test')                   |
-| update   | 更新state值      | ({name:string,payload:{[key:string]:any}}) | store.update({name:'test',{aa:'111'}})                |
-| dispatch | 触发model的effects | ({type:string,payload:any}) => voild       | store.dispatch({type:'test/effectName',payload:1234}) |
 
-## effects参数 (payload,{update,get,dispatch})
-
-### payload： 随意传入的参数
-### update: 对应实例的update方法
-### get : 对应实例的getState方法
-### dispatch: 对应实例的dispatch方法
