@@ -37,14 +37,21 @@ export default {
     data: '1234'
   },
   effects: {
-    async getData(payload){
+    async getData(payload,{select,put}){
+      // select获取当前model的state，put调用当前model的effect和reducer
+      const curretModelState = select()
+      put({
+        type: 'update',
+        payload: ''
+      })
+      
       const allState = this.getState() // 获取store所有的state
       const {test} = allState
       console.log(test)
-      // 本身的dispatch是掉用本model的effect或者reducer，
+      // this.disaptch可以调用其他model的effect和reducer
       // 所有dispatch方法都会调用effect和reducer，所以最好不要重名，不然先effect，reducer不会调用
       this.dispatch({
-        type: 'update',
+        type: 'othernamespace/update',
         payload: {
           data: 'change'
         }

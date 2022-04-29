@@ -3,9 +3,8 @@ import connect from './connect'
 
 export default store
 
-const useState = () => {
-  const ins = store.store
-  return ins.getState()
+const useModel = () => {
+  return store.store.getState()
 }
 const useDispatch = () => {
   const ins = store
@@ -15,7 +14,7 @@ const useDispatch = () => {
 
 // hooks写法
 
-export {connect,useState,useDispatch}
+export {connect,useModel,useDispatch}
 
 // use example
 // import {Provide} from 'react-redux'

@@ -1,16 +1,33 @@
 import React, {useEffect} from 'react'
-import {useState,useDispatch} from '../../lib'
+import {useModel,useDispatch} from '../../lib'
 
 export default () => {
-	const state = useState()
-	const dispatch = useDispatch()
+	const state = useModel()
 	console.log(state)
+	const {world={}} = state
+
+	const dispatch = useDispatch()
+	// console.log(state)
 	useEffect(() => {
 		dispatch({
-			type: 'world/test'
+			type: 'world/update',
+			payload: {
+				age : '14'
+			}
 		})
 	},[])
+	const handleAdd = () => {
+		dispatch({
+			type: 'world/update',
+			payload: {
+				age: 19
+			}
+		})
+	}
 	return (
-		<div>world</div>
+		<div>
+			world {world.age}
+			<button onClick={handleAdd}>测试</button>
+		</div>
 	)
 }

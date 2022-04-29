@@ -102,10 +102,8 @@ class Root {
       const [name,fnName]:string[] = type.split('/');
       if(this.effects[name] && this.effects[name][fnName]){
         return this.effects[name][fnName](payload)
-      }else if(this.reducers[name] && this.reducers[name][fnName]){
-        return this.reducers[name][fnName](payload)
-      }else {
-        return dispatch
+      } else {
+        return dispatch({type,payload})
       }
     }
 

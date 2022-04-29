@@ -16,6 +16,7 @@ export default {
 					name: 'llllll'
 				}
 			})
+			console.log(this.getState())
 			// 触发别的model的
 			this.dispatch({
 				type: 'world/changename',
