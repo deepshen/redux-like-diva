@@ -1,11 +1,13 @@
-import store from '../../lib/index'
+import store, {StoreIns} from '../../lib/index'
 
 import hello from './hello'
 import world from './world'
 
-export default store.init([
-	hello,
-	world
-])
+StoreIns.init([hello,world])
+
+// export default store.init([
+// 	hello,
+// 	world
+// ])
 
 
