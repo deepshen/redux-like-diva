@@ -23,6 +23,7 @@
       effects;
       store;
       allReducers;
+      dispatch;
       constructor() {
           this.state = {};
           this.models = {};
@@ -30,6 +31,7 @@
           this.effects = {};
           this.store = {};
           this.allReducers = {};
+          this.dispatch = () => { };
       }
       init(models) {
           Object.values(models).forEach(item => {
@@ -61,7 +63,6 @@
               // 如果 action 对应 reducer 存在，则根据函数修改 state，否则直接返回原 state
               if (currentReducer && currentReducer[type] && currentState) {
                   newState[namespace] = currentReducer[type](payload, currentState);
-                  // 修改后的 state 必须是新的对象，这样才不会覆盖旧的 state，才可以修改生效
                   newState = { ...newState };
               }
               return newState;
@@ -69,11 +70,39 @@
           // 创建 store
           this.store = redux.createStore(reducer);
           const { dispatch, getState } = this.store;
+          // 统一处理dispatch
+          this.dispatch = ({ type, payload }) => {
+              const [name, fnName] = type.split('/');
+              if (this.effects[name] && this.effects[name][fnName]) {
+                  return this.effects[name][fnName](payload);
+              }
+              else {
+                  return dispatch({ type, payload });
+              }
+          };
           // 给每个 model 的 effects 对象添加 dispatch、getState 方法
           Object.keys(this.effects).forEach(namespace => {
-              this.effects[namespace].dispatch = ({ type, payload }) => 
-              // 修改 action type，添加 namespace
-              dispatch({ type: `${namespace}/${type}`, payload });
+              // put方法只触发当前model的
+              const put = ({ type, payload }) => {
+                  return this.dispatch({ type: `${namespace}/${type}`, payload });
+              };
+              // 重写每个effects，添加新的属性进去
+              Object.keys(this.effects[namespace]).forEach(item => {
+                  let fn = this.effects[namespace][item];
+                  this.effects[namespace][item] = function (payload) {
+                      return fn.call(this, payload, { select: () => getState()[namespace], put });
+                      // return fn(payload,{select:() => getState()[namespace],put,})
+                  };
+              });
+              // 获取全量的方法
+              this.effects[namespace].dispatch = this.dispatch;
+              // this.effects[namespace].dispatch = ({type,payload}:{type:string,payload:any}) => {
+              //   const [name,fnName]:string[] = type.split('/');
+              //   if(this.effects[name] && this.effects[name][fnName]){
+              //     return this.effects[name][fnName](payload)
+              //   }
+              //   return dispatch
+              // }
               this.effects[namespace].getState = getState;
           });
           return this.store;
@@ -81,41 +110,47 @@
   }
   var store = new Root();
 
-  var connect = (mapState, mapDispatch = {}, effectsArr = []) => {
+  var connect = (mapStateToProps, mapDispatch = {}, effectsArr = []) => {
       return (Component) => {
           const NewComponent = (props) => {
-              const { effects, store: store$1 } = store;
-              const { dispatch } = store$1;
+              const { effects, dispatch } = store;
+              // const {dispatch} = store
               // 修改组件中 dispatch 触发 effects 中对应方法，而不是 reducer
-              const myDispatch = ({ type, payload }) => {
-                  const [typeId, typeName] = type.split('/');
-                  const { effects, reducers } = store;
-                  // 触发effects
-                  if (effects[typeId] && effects[typeId][typeName]) {
-                      return effects[typeId][typeName](payload);
-                  }
-                  // 触发reducers
-                  if (reducers[typeId] && reducers[typeId][type]) {
-                      dispatch({ type, payload });
-                  }
-              };
-              const effectsProps = {};
+              // const myDispatch = ({ type, payload }:{type:string,payload?:any}) => {
+              //   const [typeId, typeName] = type.split('/');
+              //   const { effects, reducers } = root;
+              //   // 触发effects
+              //   if (effects[typeId] && effects[typeId][typeName]) {
+              //     return effects[typeId][typeName](payload);
+              //   }
+              //   // 触发reducers
+              //   if(reducers[typeId] && reducers[typeId][type]){
+              //     dispatch({type,payload})
+              //   }
+              // };
+              // const effectsProps:{[key:string]:any} = {};
               effectsArr.forEach(item => {
                   if (effects[item]) {
-                      effectsProps[`${item}Effects`] = effects[item];
+                      // 直接增加到组件props上,没必要，过多的增加了组件的无用属性
+                      // effectsProps[`${item}Effects`] = effects[item];
                       // dispatch增加属性直接触发effect，像dispatch.testEffects.getList使用
                       // @ts-ignore
-                      myDispatch[`${item}Effects`] = effects[item];
+                      dispatch[`${item}`] = effects[item];
                   }
               });
-              return (
-              // @ts-ignore
-              React__default["default"].createElement(Component, { ...props, dispatch: myDispatch, ...effectsProps }));
+              return (React__default["default"].createElement(Component, { ...props, dispatch: dispatch }));
           };
-          return reactRedux.connect(mapState, mapDispatch)(NewComponent);
+          return reactRedux.connect(mapStateToProps, mapDispatch)(NewComponent);
       };
   };
 
+  const useModel = () => {
+      return store.store.getState();
+  };
+  const useDispatch = () => {
+      const ins = store;
+      return ins.dispatch;
+  };
   // use example
   // import {Provide} from 'react-redux'
   // import store from 'reduxLickDva'
@@ -126,6 +161,8 @@
 
   exports.connect = connect;
   exports["default"] = store;
+  exports.useDispatch = useDispatch;
+  exports.useModel = useModel;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 

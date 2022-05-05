@@ -20,6 +20,10 @@ export interface Action {
     type: string;
     payload: any;
 }
+export interface Dispatch {
+    type: string;
+    payload?: any;
+}
 declare class Root {
     state: {
         [key: string]: any;
@@ -37,6 +41,7 @@ declare class Root {
     allReducers: {
         [key: string]: any;
     };
+    dispatch: (val: Dispatch) => void;
     constructor();
     init(models: Model[]): any;
     model(modelObj: Model): void;
