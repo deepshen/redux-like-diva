@@ -1,6 +1,6 @@
 {
   "name": "redux-dva",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "redux like dva",
   "main": "dist/index.js",
   "files": [
@@ -44,5 +44,5 @@
     "webpack-dev-server": "^4.8.1",
     "@babel/preset-env": "^7.16.11",
     "@babel/preset-react": "^7.16.7"
-  },
+  }
 }
