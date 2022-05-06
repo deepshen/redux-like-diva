@@ -14,8 +14,18 @@ export default {
 				type: 'test'
 			})
 		},
-		test(){
-			console.log('我是world的')
+		async test(payload,{put}){
+			const data = await new Promise((resolve,reject) => {
+				setTimeout(() => {
+					resolve(payload)
+				},1000)
+			})
+			put({
+				type: 'update',
+				payload: {
+					age: data
+				}
+			})
 		}
 	},
 	reducer: {

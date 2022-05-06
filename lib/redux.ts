@@ -40,6 +40,7 @@ class Root {
   store: any
   allReducers: {[key:string]:any}
   dispatch: (val:Dispatch) => void
+  proxy:any
   constructor() {
     this.state = {};
     this.models = {};
@@ -47,8 +48,9 @@ class Root {
     this.effects = {};
     this.store = {};
     this.allReducers = {};
-    this.dispatch = () => {}
+    this.dispatch = () => {};
   }
+
 
   init(models:Model[]) {
     Object.values(models).forEach(item => {
@@ -69,6 +71,13 @@ class Root {
     this.allReducers = { ...this.allReducers, ...newReducer };
 
     this.effects[namespace] = effects;
+
+    // proxy 默认
+    this.proxy = new Proxy(this.state,{
+      set(target: { [p: string]: any }, p: string | symbol, value: any, receiver: any): boolean {
+        return true
+      }
+    })
   }
 
   createStore() {
@@ -88,6 +97,7 @@ class Root {
       // 如果 action 对应 reducer 存在，则根据函数修改 state，否则直接返回原 state
       if (currentReducer && currentReducer[type] && currentState) {
         newState[namespace] = currentReducer[type](payload, currentState);
+        this.proxy[namespace] = currentReducer[type](payload, currentState)
         newState = { ...newState };
       }
       return newState;
@@ -118,20 +128,12 @@ class Root {
         let fn = this.effects[namespace][item]
         this.effects[namespace][item] = function (payload:any){
           return fn.call(this,payload,{select: () => getState()[namespace],put})
-          // return fn(payload,{select:() => getState()[namespace],put,})
         }
       })
 
 
       // 获取全量的方法
       this.effects[namespace].dispatch = this.dispatch
-      // this.effects[namespace].dispatch = ({type,payload}:{type:string,payload:any}) => {
-      //   const [name,fnName]:string[] = type.split('/');
-      //   if(this.effects[name] && this.effects[name][fnName]){
-      //     return this.effects[name][fnName](payload)
-      //   }
-      //   return dispatch
-      // }
       this.effects[namespace].getState = getState;
     });
 

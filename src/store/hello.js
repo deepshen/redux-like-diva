@@ -31,6 +31,9 @@ export default {
 		},
 		ceshi(payload){
 			console.log(payload,'我是测试effects')
+		},
+		async abc(payload){
+			console.log('122')
 		}
 	},
 	reducer: {

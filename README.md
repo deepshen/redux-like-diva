@@ -79,6 +79,8 @@ import {connect} from 'redux-dva'
 const Com = (props) => {
     const {data,dispatch} = props
     useEffect(() => {
+        // connect后的dispatch支持如下写法	
+       // dispatch.test.getList({data:123}) 和下同效果
         dispatch({
           type: 'test/getList',
           payload: {
@@ -99,6 +101,21 @@ export default connect(
     ...state.test
   })
 )(Com)
+
+// 也支持hooks写法  函数组件中
+import {useDispatch,useModel} from 'redux-dva'
+
+export default () => {
+  const dispath = useDispatch()
+  const data = useModel()  // 获取的是所有model的state
+  const {test} = data
+  return (
+    <div>
+      {test.xxx}
+      hello world
+    </div>
+  )
+}
 
 ```
 

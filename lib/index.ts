@@ -1,29 +1,29 @@
 import store from './redux'
 import connect from './connect'
+import { useState} from "react";
 
 export default store
 
+
 const useModel = () => {
-  return store.store.getState()
+  const initState = store.state
+  const [result,setResult] = useState(initState)
+  store.proxy = new Proxy(store.state,{
+    set(target: { [p: string]: any }, p: string | symbol, value: any, receiver: any): boolean {
+      setResult({...target})
+      return true
+    }
+  })
+  return result
 }
+
 const useDispatch = () => {
   const ins = store
   return ins.dispatch
 }
 
 
-// hooks写法
 
-export {connect,useModel,useDispatch}
 
-// use example
-// import {Provide} from 'react-redux'
-// import store from 'reduxLickDva'
+export {connect,useDispatch, useModel}
 
-// const store = store.init({model})   model和dva的model一致
-
-// <Provider store={store}><App></Provider>
-
-// 页面connect参考dva
-
-// 本项目主应用不兼用改成mobx去处理下
